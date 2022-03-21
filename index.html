@@ -13,10 +13,40 @@
         <script>
             const load = async function() {
                 let data = await d3.csv("modern_raptor.csv");
+                let colorData = await d3.csv("nba-team-colors.csv");
                 data = data.filter((d) => { return (d["season"]==="2021") });
+                data = data.filter((d) => { return (Number(d["mp"])>=1000) });
+
                 console.log(data);
+                console.log(colorData)
 
+                var dataTeams = []
+                data.map(function(d) {
+                    if (!dataTeams.includes(d.team)){
+                        dataTeams.push(d.team);
+                    }
+                })
 
+                console.log(dataTeams)
+
+                var teams = []
+                var color1 = []
+                var color2 = [];
+                colorData.map(function(d) {
+                    teams.push(d.Team);
+                    color1.push(d.Color1);
+                    color2.push(d.Color2);
+                })
+
+                var primaryColors = d3.scaleOrdinal()
+                    .domain(teams)
+                    .range(color1);
+
+                var secondaryColors = d3.scaleOrdinal()
+                    .domain(teams)
+                    .range(color2);
+
+                console.log(primaryColors("NYK"))
                 const offExtent = d3.extent(data, d => d['raptor_offense']);
                 const defExtent = d3.extent(data, d => d['raptor_defense']);
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
@@ -30,21 +60,21 @@
                 const scatterAreaHeight = scatterHeight - scatterMargin.top - scatterMargin.bottom;
                 let annotations = scatterplot.append("g").attr("id","annotations");
                 const scatter = scatterplot.append("g")
-                                .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
+                                // .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
                 
 
-                const offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterWidth]);
-                const defScale = d3.scaleLinear().domain([10, -10]).range([10, scatterHeight]);
+                const offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterAreaWidth]);
+                const defScale = d3.scaleLinear().domain([10, -10]).range([0, scatterAreaHeight]);
 
                 let leftAxis = d3.axisLeft(defScale)
                 //    .tickFormat(d3.format("$.0s"));
                 let leftGridlines = d3.axisLeft(defScale)
-                                        .tickSize(-scatterWidth-10)
+                                        .tickSize(-scatterAreaWidth-10)
                                         .tickFormat("")
                 let bottomAxis = d3.axisBottom(offScale)
                                     // .tickFormat(d3.format("~f"));
                 let bottomGridlines = d3.axisBottom(offScale)
-                                        .tickSize(-scatterHeight-10)
+                                        .tickSize(-scatterAreaHeight-10)
                                         .tickFormat("")
                 annotations.append("g")
                     .attr("class", "y axis")
@@ -56,11 +86,11 @@
                     .call(leftGridlines);
                 annotations.append("g")
                     .attr("class", "x axis")
-                    .attr("transform",`translate(${scatterMargin.left},${scatterHeight+scatterMargin.top+10})`)
+                    .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomAxis);
                 annotations.append("g")
                     .attr("class", "x gridlines")
-                    .attr("transform",`translate(${scatterMargin.left},${scatterHeight+scatterMargin.top+10})`)
+                    .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomGridlines);
                         
                 
@@ -69,14 +99,14 @@
                         .join('circle').attr("class", "player")
                         .attr("cx", d => offScale(d["raptor_offense"]))
                         .attr("cy", d => defScale(d["raptor_defense"]))
-                        .attr("r", 3)
-                        .attr("stroke", "black")
-                        .attr("stroke-width", "2px")
-                        .attr("fill", "black")
+                        .attr("r", 3.5)
+                        .attr("stroke", d=> secondaryColors(d['team']))
+                        .attr("stroke-width", "1.5px")
+                        .attr("fill", d=> primaryColors(d['team']))
                         .style("opacity", .8)
                         .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
-            }
-
+            
+        }
             load();
         </script>
     </body>
