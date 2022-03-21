@@ -36,23 +36,6 @@
                 const offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterWidth]);
                 const defScale = d3.scaleLinear().domain([10, -10]).range([10, scatterHeight]);
 
-                // let leftAxis = d3.axisLeft(defScale);
-                // scatter.append("g")
-                //            .attr("class", "y axis")
-                //            .attr("transform",`translate(${scatterMargin.left},${scatterMargin.top})`)
-                //            .call(leftAxis);
-                // let bottomAxis = d3.axisBottom(offScale);
-                // scatter.append("g")
-                //     .attr("class", "x axis")
-                //     .attr("transform", `translate(${scatterMargin.left},${scatterHeight + scatterMargin.top})`)
-                //     .call(bottomAxis)
-                    // .selectAll("text")
-                    // .attr("y", 0)
-                    // .attr("x", 9)
-                    // .attr("dy", ".35em")
-                    // .attr("transform", "rotate(60)")
-                    // .style("text-anchor", "start");
-
                 let leftAxis = d3.axisLeft(defScale)
                 //    .tickFormat(d3.format("$.0s"));
                 let leftGridlines = d3.axisLeft(defScale)
