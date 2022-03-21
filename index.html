@@ -3,6 +3,15 @@
     <head>
         <title>INFO4310 HW4 - rcc263, jmw555</title>
         <script src="https://d3js.org/d3.v7.min.js"></script>
+        <style>
+            .gridlines{
+                color: lightgrey;
+            }
+
+            .axis{
+                color: black !important;
+            }
+        </style>
     </head>
     <body>
         <h1>The Best NBA Players, According to RAPTOR</h1>
@@ -76,23 +85,34 @@
                 let bottomGridlines = d3.axisBottom(offScale)
                                         .tickSize(-scatterAreaHeight-10)
                                         .tickFormat("")
-                annotations.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
-                    .call(leftAxis)
+                
                 annotations.append("g")
                     .attr("class", "y gridlines")
                     .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
                     .call(leftGridlines);
+
                 annotations.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
-                    .call(bottomAxis);
+                    .attr("class", "y axis")
+                    .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
+                    .call(leftAxis)
+
                 annotations.append("g")
                     .attr("class", "x gridlines")
                     .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomGridlines);
+                annotations.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
+                    .call(bottomAxis);
+
+                //zero lines
+                annotations.append("path")
+                    .attr("d", `M${scatterMargin.left-10},${scatterMargin.top+(scatterAreaHeight/2)} h ${scatterAreaWidth+10}`)
+                    .attr("stroke", "grey")
                         
+                annotations.append("path")
+                    .attr("d", `M${scatterMargin.left+(scatterAreaWidth/2)},${scatterMargin.top} v ${scatterAreaWidth+10} `)
+                    .attr("stroke", "grey")
                 
                 let circles = scatter.selectAll("circle.player")
                         .data(data)
