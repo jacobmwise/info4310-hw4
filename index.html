@@ -5,5 +5,16 @@
         <script src="https://d3js.org/d3.v7.min.js"></script>
     </head>
     <body>
+        <h1>The Best NBA Players, According to RAPTOR</h1>
+        <h2>Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
+
+        <script>
+            const load = async function() {
+                let data = await d3.csv("modern_raptor.csv");
+                console.log(data);
+            }
+
+            load();
+        </script>
     </body>
 </html>
