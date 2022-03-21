@@ -8,10 +8,90 @@
         <h1>The Best NBA Players, According to RAPTOR</h1>
         <h2>Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
+        <svg id="scatter" width="500" height="500"></svg>
+
         <script>
             const load = async function() {
                 let data = await d3.csv("modern_raptor.csv");
+                data = data.filter((d) => { return (d["season"]==="2021") });
                 console.log(data);
+
+
+                const offExtent = d3.extent(data, d => d['raptor_offense']);
+                const defExtent = d3.extent(data, d => d['raptor_defense']);
+                const totalExtent = d3.extent(data, d => d['raptor_total'])
+                console.log(offExtent, defExtent, totalExtent)
+
+                const scatterplot = d3.select("#scatter");
+                const scatterWidth = scatterplot.attr("width");
+                const scatterHeight = scatterplot.attr("height");
+                const scatterMargin = { top: 30, right: 30, bottom: 30, left: 30};
+                const scatterAreaWidth = scatterWidth - scatterMargin.left - scatterMargin.right;
+                const scatterAreaHeight = scatterHeight - scatterMargin.top - scatterMargin.bottom;
+                let annotations = scatterplot.append("g").attr("id","annotations");
+                const scatter = scatterplot.append("g")
+                                .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
+                
+
+                const offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterWidth]);
+                const defScale = d3.scaleLinear().domain([10, -10]).range([10, scatterHeight]);
+
+                // let leftAxis = d3.axisLeft(defScale);
+                // scatter.append("g")
+                //            .attr("class", "y axis")
+                //            .attr("transform",`translate(${scatterMargin.left},${scatterMargin.top})`)
+                //            .call(leftAxis);
+                // let bottomAxis = d3.axisBottom(offScale);
+                // scatter.append("g")
+                //     .attr("class", "x axis")
+                //     .attr("transform", `translate(${scatterMargin.left},${scatterHeight + scatterMargin.top})`)
+                //     .call(bottomAxis)
+                    // .selectAll("text")
+                    // .attr("y", 0)
+                    // .attr("x", 9)
+                    // .attr("dy", ".35em")
+                    // .attr("transform", "rotate(60)")
+                    // .style("text-anchor", "start");
+
+                let leftAxis = d3.axisLeft(defScale)
+                //    .tickFormat(d3.format("$.0s"));
+                let leftGridlines = d3.axisLeft(defScale)
+                                        .tickSize(-scatterWidth-10)
+                                        .tickFormat("")
+                let bottomAxis = d3.axisBottom(offScale)
+                                    // .tickFormat(d3.format("~f"));
+                let bottomGridlines = d3.axisBottom(offScale)
+                                        .tickSize(-scatterHeight-10)
+                                        .tickFormat("")
+                annotations.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
+                    .call(leftAxis)
+                annotations.append("g")
+                    .attr("class", "y gridlines")
+                    .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
+                    .call(leftGridlines);
+                annotations.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform",`translate(${scatterMargin.left},${scatterHeight+scatterMargin.top+10})`)
+                    .call(bottomAxis);
+                annotations.append("g")
+                    .attr("class", "x gridlines")
+                    .attr("transform",`translate(${scatterMargin.left},${scatterHeight+scatterMargin.top+10})`)
+                    .call(bottomGridlines);
+                        
+                
+                let circles = scatter.selectAll("circle.player")
+                        .data(data)
+                        .join('circle').attr("class", "player")
+                        .attr("cx", d => offScale(d["raptor_offense"]))
+                        .attr("cy", d => defScale(d["raptor_defense"]))
+                        .attr("r", 3)
+                        .attr("stroke", "black")
+                        .attr("stroke-width", "2px")
+                        .attr("fill", "black")
+                        .style("opacity", .8)
+                        .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
             }
 
             load();
