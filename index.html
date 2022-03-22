@@ -17,7 +17,19 @@
         <h1>The Best NBA Players, According to RAPTOR</h1>
         <h2>Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
-        <svg id="scatter" width="500" height="500"></svg>
+        <div style="display: flex; flex-direction: row;">
+            <svg id="scatter" width="500" height="500"></svg>
+            <div style="margin-left: 50px;">
+                <h2>Top Five</h2>
+                <ol>
+                    <li id="first"></li>
+                    <li id="second"></li>
+                    <li id="third"></li>
+                    <li id="fourth"></li>
+                    <li id="fifth"></li>
+                </ol>
+            </div>
+        </div>
 
         <script>
             const load = async function() {
@@ -26,8 +38,10 @@
                 data = data.filter((d) => { return (d["season"]==="2021") });
                 data = data.filter((d) => { return (Number(d["mp"])>=1000) });
 
+                const topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
+                console.log(topFive)
+
                 console.log(data);
-                console.log(colorData)
 
                 var dataTeams = []
                 data.map(function(d) {
@@ -139,12 +153,22 @@
                         .join('circle').attr("class", "player")
                         .attr("cx", d => offScale(d["raptor_offense"]))
                         .attr("cy", d => defScale(d["raptor_defense"]))
-                        .attr("r", 3.5)
+                        // .attr("r", 3.5)
+                        .attr("r", function(d) {
+                            if (topFive.includes(d)) {return 10}
+                            else 	{ return 3.5 }
+                        ;})
                         .attr("stroke", d=> secondaryColors(d['team']))
                         .attr("stroke-width", "1.5px")
                         .attr("fill", d=> primaryColors(d['team']))
                         .style("opacity", .8)
                         .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
+
+                d3.select("li#first").text(topFive[0]["player_name"])
+                d3.select("li#second").text(topFive[1]["player_name"])
+                d3.select("li#third").text(topFive[2]["player_name"])
+                d3.select("li#fourth").text(topFive[3]["player_name"])
+                d3.select("li#fifth").text(topFive[4]["player_name"])
             
         }
             load();
