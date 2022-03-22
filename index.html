@@ -18,7 +18,10 @@
         <h2>Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
         <div style="display: flex; flex-direction: row;">
-            <svg id="scatter" width="500" height="500"></svg>
+            <div id="filters-container">
+                
+            </div>
+            <svg id="scatter" width="500" height="500" style="margin-left: 50px;"></svg>
             <div style="margin-left: 50px;">
                 <h2>Top Five</h2>
                 <ol>
@@ -38,7 +41,7 @@
                 data = data.filter((d) => { return (d["season"]==="2021") });
                 data = data.filter((d) => { return (Number(d["mp"])>=1000) });
 
-                const topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
+                let topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
                 console.log(topFive)
 
                 console.log(data);
@@ -73,7 +76,6 @@
                 const offExtent = d3.extent(data, d => d['raptor_offense']);
                 const defExtent = d3.extent(data, d => d['raptor_defense']);
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
-                console.log(offExtent, defExtent, totalExtent)
 
                 const scatterplot = d3.select("#scatter");
                 const scatterWidth = scatterplot.attr("width");
@@ -147,28 +149,68 @@
                     .attr("stroke", "grey")
 
                 
-                
-                let circles = scatter.selectAll("circle.player")
-                        .data(data)
-                        .join('circle').attr("class", "player")
-                        .attr("cx", d => offScale(d["raptor_offense"]))
-                        .attr("cy", d => defScale(d["raptor_defense"]))
-                        // .attr("r", 3.5)
-                        .attr("r", function(d) {
-                            if (topFive.includes(d)) {return 10}
-                            else 	{ return 3.5 }
-                        ;})
-                        .attr("stroke", d=> secondaryColors(d['team']))
-                        .attr("stroke-width", "1.5px")
-                        .attr("fill", d=> primaryColors(d['team']))
-                        .style("opacity", .8)
-                        .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
+                function plotCircles() {
+                    let circles = scatter.selectAll("circle.player")
+                            .data(data)
+                            .join('circle').attr("class", "player")
+                            .attr("cx", d => offScale(d["raptor_offense"]))
+                            .attr("cy", d => defScale(d["raptor_defense"]))
+                            // .attr("r", 3.5)
+                            .attr("r", function(d) {
+                                if (topFive.includes(d)) {return 10}
+                                else 	{ return 3.5 }
+                            ;})
+                            .attr("stroke", d=> secondaryColors(d['team']))
+                            .attr("stroke-width", "1.5px")
+                            .attr("fill", d=> primaryColors(d['team']))
+                            .style("opacity", .8)
+                            .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
+                }
+                plotCircles();
 
                 d3.select("li#first").text(topFive[0]["player_name"])
                 d3.select("li#second").text(topFive[1]["player_name"])
                 d3.select("li#third").text(topFive[2]["player_name"])
                 d3.select("li#fourth").text(topFive[3]["player_name"])
                 d3.select("li#fifth").text(topFive[4]["player_name"])
+
+                function raptorType() {
+                    let values = ['raptor_total', 'raptor_offense', 'raptor_defense'];
+
+                    var label = d3.select("div#filters-container").append("text").text("RAPTOR Type");
+                    var select = d3.select("div#filters-container")
+                                        .append("div")
+                                        .append("select")
+                                        .attr("class", "dropdownFilter")
+                                        .attr("id", "raptorType")
+                                        // .attr("data-field", field)
+                                        .style("border", "1px solid black")
+                                        .style("border-radius", "5px")
+                                        .style("margin-top", "6px")
+                                        .style("margin-bottom", "12px")
+                                        .on("change", function(e, d) {
+                                            filterRaptorType(d3.select(this).node().value);
+                                            // filter(d3.select(this).attr("data-field"), d3.select(this).node().value);
+                                        })
+                    select.selectAll("raptorType")
+                            .data(values)
+                            .enter()
+                                .append("option")
+                                .attr("value", function (d) { return d; })
+                                .text(function (d) { return d.charAt(0).toUpperCase() + d.substring(1,6) + " " + d.charAt(7).toUpperCase() + d.substring(8); });
+
+                }
+                raptorType();
+
+                function filterRaptorType(val) {
+                    topFive = data.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                    d3.select("li#first").text(topFive[0]["player_name"])
+                    d3.select("li#second").text(topFive[1]["player_name"])
+                    d3.select("li#third").text(topFive[2]["player_name"])
+                    d3.select("li#fourth").text(topFive[3]["player_name"])
+                    d3.select("li#fifth").text(topFive[4]["player_name"])
+                    plotCircles();
+                }
             
         }
             load();
