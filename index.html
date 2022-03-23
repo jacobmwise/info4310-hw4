@@ -154,6 +154,9 @@
                     .attr("d", `M${scatterMargin.left+(scatterAreaWidth/2)},${scatterMargin.top} v ${scatterAreaWidth+10} `)
                     .attr("stroke", "grey")
 
+                function getNumericPixelVal(str){
+                    return Number(String(str).substr(0, String(str).length-2))
+                }
                 
                 let currentData = data;
 
@@ -173,6 +176,98 @@
                             .attr("fill", d=> primaryColors(d['team']))
                             .style("opacity", .8)
                             .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
+                            .on("mouseover", function(e, d){
+                                d3.select(this)
+                                    .raise()
+                                    .transition().duration(250)
+                                    .attr("r", 8)
+                                    .attr("opacity", 0.8)
+
+                                let tooltipWidth = 180;
+                                let tooltipHeight = 70;
+                                let tooltip = scatter.append("g")
+                                    .attr("class","tooltip")
+                                    .attr("opacity", .4)
+                                    .raise()
+
+                                let tooltipX = (-tooltipWidth/2) + getNumericPixelVal(offScale(d["raptor_offense"]))
+                                if ((tooltipX+(tooltipWidth)>=scatterAreaWidth+scatterMargin.left)){
+                                    tooltipX = scatterAreaWidth+scatterMargin.left - (tooltipWidth)-2
+                                } else if (tooltipX<=scatterMargin.left) {
+                                    tooltipX = scatterMargin.left + 2
+                                }
+
+                                let tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))-tooltipHeight-5+20
+                                if ((tooltipY<=0)){
+                                    tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))+45
+                                }
+                                    
+                                tooltip.append("rect")
+                                    .attr("fill", "white")
+                                    .attr("opacity", 1)
+                                    .attr("x", tooltipX)
+                                    .attr("y", tooltipY)
+                                    .attr("rx", "5")
+                                    .attr("ry", "5")
+                                    .attr("width",tooltipWidth)
+                                    .attr("height",tooltipHeight)
+                                    .attr("stroke", "lightgrey")
+                                    .attr("stroke-width", "1px")
+                                let txt = tooltip.append("text")
+                                    .text(d['player_name'] + " - " + d['team'])
+                                    .attr("fill", "black")
+                                    .attr("text-anchor","left")
+                                    .attr("alignment-baseline","hanging")
+                                    .attr("x", tooltipX+5)
+                                    .attr("y", tooltipY + 5)
+                                    .style("font-size", "13px");
+                                let txt2 = tooltip.append("text")
+                                    .text(`Total Raptor: ${Number(Number(d['raptor_offense'])+Number(d['raptor_defense'])).toFixed(2)}`)
+                                    .attr("fill", "gray")
+                                    .attr("text-anchor","left")
+                                    .attr("alignment-baseline","hanging")
+                                    .attr("x", tooltipX+5)
+                                    .attr("y", tooltipY + 25)
+                                    .style("font-size", "12px");
+
+                                let txt3 = tooltip.append("text")
+                                    .text(`Offensive Raptor: ${Number(d['raptor_offense']).toFixed(2)}`)
+                                    .attr("fill", "gray")
+                                    .attr("text-anchor","left")
+                                    .attr("alignment-baseline","hanging")
+                                    .attr("x",tooltipX+5)
+                                    .attr("y", tooltipY + 40)
+                                    .style("font-size", "12px");
+
+                                let txt4 = tooltip.append("text")
+                                    .text(`Defensive Raptor: ${Number(d['raptor_defense']).toFixed(2)}`)
+                                    .attr("fill", "gray")
+                                    .attr("text-anchor","left")
+                                    .attr("alignment-baseline","hanging")
+                                    .attr("x", tooltipX+5)
+                                    .attr("y", tooltipY + 55)
+                                    .style("font-size", "12px");
+
+                                // let xPos = (d['coords'][0]+tooltipWidth+50);
+                                // let yPos = (d['coords'][1]+tooltipHeight+5);
+
+                                // tooltip.style("transform",`translate(${yPos}, ${xPos}) rotate(90deg)`);
+                                d3.select(".tooltip")
+                                    .raise().raise()
+                                    .transition().duration(300)
+                                    .attr("opacity", 0.9)
+                                    
+                            })
+                            .on("mouseout", function(e,d){
+                                d3.select(this)
+                                    .transition().duration(250)
+                                    .attr("r", function(d) {
+                                    if (topFive.includes(d)) {return 10}
+                                    else 	{ return 3.5 }
+                                ;})
+                                
+                                d3.selectAll(".tooltip").remove()
+                            })
                 }
                 plotCircles();
 
