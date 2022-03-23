@@ -337,7 +337,7 @@
                                         .style("margin-top", "6px")
                                         .style("margin-bottom", "12px")
                                         .on("change", function(e, d){
-                                            filterPlot(d3.select(this).node().value)
+                                            filterPlot(field, d3.select(this).node().value)
                                         })
 
                     select.selectAll(`${field}Select`)
@@ -348,18 +348,41 @@
                                 .text(function (d) { return d; });
                 }
                 createDropdown('position');
+                createDropdown('team');
+                // createDropdown('season_type');
 
-                function filterPlot(val) {
+                let currentFilters = {};
+                function filterPlot(field, val) {
+                    delete currentFilters[field]
                     currentData = data
-                    if (val !== "All") {
-                        currentData = currentData.filter((d) => { return (d["position"].includes(val)) });
+                    if (val!=="All") {
+                        currentFilters[field] = val;
+                    
+
+                        Object.keys(currentFilters).forEach(key => {
+                            currentData = currentData.filter(d => { return d[key].includes(currentFilters[key]) });
+                            currentData = currentData.filter(d => { return d[field].includes(val) });
+                        })
                     }
-                    topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
-                    d3.select("li#first").text(topFive[0]["player_name"])
-                    d3.select("li#second").text(topFive[1]["player_name"])
-                    d3.select("li#third").text(topFive[2]["player_name"])
-                    d3.select("li#fourth").text(topFive[3]["player_name"])
-                    d3.select("li#fifth").text(topFive[4]["player_name"])
+                    if (currentData.length >= 5) {
+                        topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                        d3.select("li#first").text(topFive[0]["player_name"])
+                        d3.select("li#second").text(topFive[1]["player_name"])
+                        d3.select("li#third").text(topFive[2]["player_name"])
+                        d3.select("li#fourth").text(topFive[3]["player_name"])
+                        d3.select("li#fifth").text(topFive[4]["player_name"])
+                    } else {
+                        topFive = currentData.sort((a, b) => b[val] - a[val])
+                        let numMap = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth"}
+                        for (let i=0; i < currentData.length; i++) {
+                            console.log(i)
+                            d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"])
+                            delete numMap[i]
+                        }
+                        Object.keys(numMap).forEach(n => {
+                            d3.select(`li#${numMap[n]}`).text("N/A")
+                        })
+                    }
                     plotCircles();
                 }
             
