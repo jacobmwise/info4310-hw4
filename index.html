@@ -38,13 +38,22 @@
             const load = async function() {
                 let data = await d3.csv("modern_raptor.csv");
                 let colorData = await d3.csv("nba-team-colors.csv");
+                let stats = await d3.csv("nbaplayerstats20-21.csv");
                 data = data.filter((d) => { return (d["season"]==="2021") });
                 data = data.filter((d) => { return (Number(d["mp"])>=1000) });
+                data.forEach(d => {
+                    let res = stats.filter(x => { return x["Player"]===d["player_name"]})
+                    if (res[0]) {
+                        let pos = res[0]['Pos']
+                        d['position'] = pos
+                    }
+                });
+                data = data.filter((d) => { return (d["position"]) });
 
                 let topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
-                console.log(topFive)
 
                 console.log(data);
+                console.log(stats)
 
                 var dataTeams = []
                 data.map(function(d) {
@@ -52,8 +61,6 @@
                         dataTeams.push(d.team);
                     }
                 })
-
-                console.log(dataTeams)
 
                 var teams = []
                 var color1 = []
@@ -72,7 +79,6 @@
                     .domain(teams)
                     .range(color2);
 
-                console.log(primaryColors("NYK"))
                 const offExtent = d3.extent(data, d => d['raptor_offense']);
                 const defExtent = d3.extent(data, d => d['raptor_defense']);
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
@@ -149,9 +155,11 @@
                     .attr("stroke", "grey")
 
                 
+                let currentData = data;
+
                 function plotCircles() {
                     let circles = scatter.selectAll("circle.player")
-                            .data(data)
+                            .data(currentData)
                             .join('circle').attr("class", "player")
                             .attr("cx", d => offScale(d["raptor_offense"]))
                             .attr("cy", d => defScale(d["raptor_defense"]))
@@ -204,6 +212,54 @@
 
                 function filterRaptorType(val) {
                     topFive = data.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                    d3.select("li#first").text(topFive[0]["player_name"])
+                    d3.select("li#second").text(topFive[1]["player_name"])
+                    d3.select("li#third").text(topFive[2]["player_name"])
+                    d3.select("li#fourth").text(topFive[3]["player_name"])
+                    d3.select("li#fifth").text(topFive[4]["player_name"])
+                    plotCircles();
+                }
+
+                function createDropdown(field) {
+                    let values = [];
+                    
+                    currentData.forEach(d => {
+                        if (!values.includes(d[field]) && d[field] !== "" && !d[field].includes("-")) {
+                            values.push(d[field]);
+                        }
+                    })
+                    values.sort();
+                    values.unshift("All");
+                    var label = d3.select("div#filters-container").append("text").text(field.substring(0,1).toUpperCase() + field.substring(1));
+                    var select = d3.select("div#filters-container")
+                                        .append("div")
+                                        .append("select")
+                                        .attr("class", "dropdownFilter")
+                                        .attr("id", `${field}Select`)
+                                        .attr("data-field", field)
+                                        .style("border", "1px solid black")
+                                        .style("border-radius", "5px")
+                                        .style("margin-top", "6px")
+                                        .style("margin-bottom", "12px")
+                                        .on("change", function(e, d){
+                                            filterPlot(d3.select(this).node().value)
+                                        })
+
+                    select.selectAll(`${field}Select`)
+                            .data(values)
+                            .enter()
+                                .append("option")
+                                .attr("value", function (d) { return d; })
+                                .text(function (d) { return d; });
+                }
+                createDropdown('position');
+
+                function filterPlot(val) {
+                    currentData = data
+                    if (val !== "All") {
+                        currentData = currentData.filter((d) => { return (d["position"].includes(val)) });
+                    }
+                    topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
                     d3.select("li#first").text(topFive[0]["player_name"])
                     d3.select("li#second").text(topFive[1]["player_name"])
                     d3.select("li#third").text(topFive[2]["player_name"])
