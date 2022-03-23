@@ -40,13 +40,14 @@
                 let colorData = await d3.csv("nba-team-colors.csv");
                 let stats = await d3.csv("nbaplayerstats20-21.csv");
                 data = data.filter((d) => { return (d["season"]==="2021") });
-                data = data.filter((d) => { return (Number(d["mp"])>=1000) });
+                // data = data.filter((d) => { return (Number(d["mp"])>=1000) });
                 data.forEach(d => {
                     let res = stats.filter(x => { return x["Player"].normalize('NFD').replace(/[\u0300-\u036f]/g, "")===d["player_name"]})
                     if (res[0]) {
                         let pos = res[0]['Pos']
                         d['position'] = pos
                     }
+                    d['mp'] = Number(d['mp'])
                 });
                 data = data.filter((d) => { return (d["position"]) });
 
@@ -82,6 +83,8 @@
                 const offExtent = d3.extent(data, d => d['raptor_offense']);
                 const defExtent = d3.extent(data, d => d['raptor_defense']);
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
+
+                const minutesExtent = d3.extent(data, d => d['mp'])
 
                 const scatterplot = d3.select("#scatter");
                 const scatterWidth = scatterplot.attr("width");
@@ -253,7 +256,7 @@
 
                                 // tooltip.style("transform",`translate(${yPos}, ${xPos}) rotate(90deg)`);
                                 d3.select(".tooltip")
-                                    .raise().raise()
+                                    .raise()
                                     .transition().duration(300)
                                     .attr("opacity", 0.9)
                                     
@@ -269,7 +272,7 @@
                                 d3.selectAll(".tooltip").remove()
                             })
                 }
-                plotCircles();
+                // plotCircles();
 
                 d3.select("li#first").text(topFive[0]["player_name"])
                 d3.select("li#second").text(topFive[1]["player_name"])
@@ -347,23 +350,83 @@
                                 .attr("value", function (d) { return d; })
                                 .text(function (d) { return d; });
                 }
+
+                let currMin = 1000 
+                let currMax = minutesExtent[1]
+
+                function createSlider(name, field, thisExtent){
+                    var nameSelect = d3.select("div#filters-container")
+                                .append("div")
+                                .attr("id", `${field}Div`)
+                                .style("display", "flex")
+                                .style("flex-direction", "column")
+                                .style("justify-content", "space-between")
+
+                    var label = d3.select(`div#${field}Div`).append("text").text(name);
+
+                    var innerMinSelect = nameSelect
+                                .append("div")
+                                .attr("class", "sliderRow")
+                                .style("display", "block")
+                                .style("flex-direction", "row")
+                                .style("justify-content", "space-between")
+
+                    //min slider
+                    // var minLabel = innerMinSelect.append("p").text(name)
+
+                    var minSlider = innerMinSelect.append("input")
+                        .attr("type", "range")
+                        .attr("min", thisExtent[0])
+                        .attr('max', thisExtent[1])
+                        .attr("id", "min"+field)
+                        .attr("value", currMin)
+
+                    minSlider
+                        .on("input", function(e, d){
+                            currMin = Number(this.value)
+                            minValue.text(Number(currMin) + "+ minutes")
+                            filterPlot("mp", currMin)
+                            
+                        })
+
+                    var minValue = innerMinSelect.append("p").text(Number(currMin) + "+ minutes")
+
+                    var innerMaxSelect = nameSelect
+                                .append("div")
+                                .attr("class", "sliderRow")
+                                .style("display", "flex")
+                                .style("flex-direction", "row")
+                                .style("justify-content", "space-between")
+
+                   
+                    nameSelect.append("hr")
+                }
+
+
                 createDropdown('position');
                 createDropdown('team');
                 // createDropdown('season_type');
+                createSlider("Min. Minutes Played", "mp", minutesExtent)
 
-                let currentFilters = {};
+                let currentFilters = {}
                 function filterPlot(field, val) {
                     delete currentFilters[field]
                     currentData = data
-                    if (val!=="All") {
+                     if (val!=="All") {
                         currentFilters[field] = val;
-                    
+                     }
 
                         Object.keys(currentFilters).forEach(key => {
-                            currentData = currentData.filter(d => { return d[key].includes(currentFilters[key]) });
-                            currentData = currentData.filter(d => { return d[field].includes(val) });
+                            if (key=="mp"){
+                                currentData = currentData.filter((d) => { return (Number(d["mp"]) >= currentFilters[key])})
+
+                            } else {
+                                currentData = currentData.filter(d => { return d[key].includes(currentFilters[key]) });
+                                // currentData = currentData.filter(d => { return d[field].includes(val) });
+                            }
                         })
-                    }
+                        console.log(currentFilters)
+                    
                     if (currentData.length >= 5) {
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
                         d3.select("li#first").text(topFive[0]["player_name"])
@@ -385,6 +448,8 @@
                     }
                     plotCircles();
                 }
+
+                filterPlot("mp", 1000); //preset minutes filter to 1000 minimum
             
         }
             load();
