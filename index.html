@@ -4,6 +4,10 @@
         <title>INFO4310 HW4 - rcc263, jmw555</title>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
+            body{
+                background: #ffefd5;
+            }
+
             .gridlines{
                 color: lightgrey;
             }
@@ -14,14 +18,14 @@
         </style>
     </head>
     <body>
-        <h1>The Best NBA Players, According to RAPTOR</h1>
-        <h2>Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
+        <h1 style="text-align: center;">The Best NBA Players, According to RAPTOR</h1>
+        <h2 style="text-align: center;">Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
-        <div style="display: flex; flex-direction: row;">
+        <div style="display: flex; flex-direction: row; justify-content: center;">
             <div id="filters-container">
                 
             </div>
-            <svg id="scatter" width="500" height="500" style="margin-left: 50px;"></svg>
+            <svg id="scatter" width="550" height="550" style="margin-left: 50px;"></svg>
             <div style="margin-left: 50px; display: flex; flex-direction: column;">
                 <div>
                     <h2>Top Five</h2>
@@ -113,7 +117,7 @@
                 const scatterplot = d3.select("#scatter");
                 const scatterWidth = scatterplot.attr("width");
                 const scatterHeight = scatterplot.attr("height");
-                const scatterMargin = { top: 30, right: 30, bottom: 30, left: 30};
+                const scatterMargin = { top: 50, right: 50, bottom: 50, left: 50};
                 const scatterAreaWidth = scatterWidth - scatterMargin.left - scatterMargin.right;
                 const scatterAreaHeight = scatterHeight - scatterMargin.top - scatterMargin.bottom;
 
@@ -171,6 +175,18 @@
                     .attr("class", "x axis")
                     .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomAxis);
+                scatter.append("g")
+                    .attr('transform', 'translate(' + scatterWidth/2 + ', ' + scatterHeight + ')')
+                    .append('text')
+                    .attr('text-anchor', 'middle')
+                    .text("Offensive RAPTOR")
+                scatter.append('g')
+                    .attr('transform', 'translate(' + 15 + ', ' + scatterHeight/2 + ')')
+                    .append('text')
+                    .attr('text-anchor', 'middle')
+                    .attr('transform', 'rotate(-90)')
+                    .text("Defensive RAPTOR")
+
 
                 //zero lines
                 annotations.append("path")
