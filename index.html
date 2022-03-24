@@ -22,15 +22,24 @@
                 
             </div>
             <svg id="scatter" width="500" height="500" style="margin-left: 50px;"></svg>
-            <div style="margin-left: 50px;">
-                <h2>Top Five</h2>
-                <ol>
-                    <li id="first"></li>
-                    <li id="second"></li>
-                    <li id="third"></li>
-                    <li id="fourth"></li>
-                    <li id="fifth"></li>
-                </ol>
+            <div style="margin-left: 50px; display: flex; flex-direction: column;">
+                <div>
+                    <h2>Top Five</h2>
+                    <ol>
+                        <li id="first"></li>
+                        <li id="second"></li>
+                        <li id="third"></li>
+                        <li id="fourth"></li>
+                        <li id="fifth"></li>
+                    </ol>
+                </div>
+                <div style="display: flex; flex-direction: column;">
+                    <h3>Selected Player Stats</h3>
+                    <h4 id="name"></h4>
+                    <text id="ppg"></text>
+                    <text id="reb"></text>
+                    <text id="ast"></text>
+                </div>
             </div>
         </div>
 
@@ -46,10 +55,16 @@
                     if (res[0]) {
                         let pos = res[0]['Pos']
                         d['position'] = pos
+                        let age = res[0]['Age']
+                        d['age'] = Number(age)
+                        d['ppg'] = Number(res[0]['PTS'])
+                        d['reb'] = Number(res[0]['TRB'])
+                        d['ast'] = Number(res[0]['AST'])
                     }
                     d['mp'] = Number(d['mp'])
                 });
                 data = data.filter((d) => { return (d["position"]) });
+                data = data.filter((d) => { return (d["age"]) });
 
                 let topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
 
@@ -85,6 +100,7 @@
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
 
                 const minutesExtent = d3.extent(data, d => d['mp'])
+                const ageExtent = d3.extent(data, d => d['age'])
 
                 const scatterplot = d3.select("#scatter");
                 const scatterWidth = scatterplot.attr("width");
@@ -271,6 +287,12 @@
                                 
                                 d3.selectAll(".tooltip").remove()
                             })
+                            .on("click", function(e,d){
+                                d3.select("h4#name").text(d['player_name'])
+                                d3.select("text#ppg").text(d['ppg'] + " PPG")
+                                d3.select("text#reb").text(d['reb'] + " REB")
+                                d3.select("text#ast").text(d['ast'] + " AST")
+                            })
                 }
                 // plotCircles();
 
@@ -351,10 +373,16 @@
                                 .text(function (d) { return d; });
                 }
 
-                let currMin = 1000 
-                let currMax = minutesExtent[1]
 
                 function createSlider(name, field, thisExtent){
+                    if (field === "mp") {
+                        var currMin = 1000
+                        var textLabel = "+ minutes"
+                    } else {
+                        var currMin = 19
+                        var textLabel = ""
+                    }
+                    
                     var nameSelect = d3.select("div#filters-container")
                                 .append("div")
                                 .attr("id", `${field}Div`)
@@ -384,12 +412,12 @@
                     minSlider
                         .on("input", function(e, d){
                             currMin = Number(this.value)
-                            minValue.text(Number(currMin) + "+ minutes")
-                            filterPlot("mp", currMin)
+                            minValue.text(Number(currMin) + textLabel)
+                            filterPlot(field, currMin)
                             
                         })
 
-                    var minValue = innerMinSelect.append("p").text(Number(currMin) + "+ minutes")
+                    var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel)
 
                     var innerMaxSelect = nameSelect
                                 .append("div")
@@ -405,8 +433,9 @@
 
                 createDropdown('position');
                 createDropdown('team');
-                // createDropdown('season_type');
+
                 createSlider("Min. Minutes Played", "mp", minutesExtent)
+                createSlider("Age", "age", ageExtent)
 
                 let currentFilters = {}
                 function filterPlot(field, val) {
@@ -417,9 +446,11 @@
                      }
 
                         Object.keys(currentFilters).forEach(key => {
-                            if (key=="mp"){
-                                currentData = currentData.filter((d) => { return (Number(d["mp"]) >= currentFilters[key])})
+                            if (key==="mp"){
+                                currentData = currentData.filter((d) => { return (Number(d[key]) >= currentFilters[key])})
 
+                            } else if (key==="age") {
+                                currentData = currentData.filter((d) => { return (Number(d[key]) === currentFilters[key])})
                             } else {
                                 currentData = currentData.filter(d => { return d[key].includes(currentFilters[key]) });
                                 // currentData = currentData.filter(d => { return d[field].includes(val) });
