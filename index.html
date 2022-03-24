@@ -15,6 +15,16 @@
             .axis{
                 color: black !important;
             }
+
+            #name{
+                margin: 0 0 5px;
+            }
+            #teamname{
+                margin: 0 0 8px;
+                border-radius: 5px;
+                padding: 4px;
+                text-align: center;
+            }
         </style>
     </head>
     <body>
@@ -39,7 +49,8 @@
                 </div>
                 <div style="display: flex; flex-direction: column;">
                     <h3>Selected Player Stats</h3>
-                    <h4 id="name"></h4>
+                    <h3 id="name"></h4>
+                    <h4 id="teamname"></h5>
                     <text id="ppg"></text>
                     <text id="fg"></text>
                     <text id="three"></text>
@@ -93,10 +104,13 @@
                 var teams = []
                 var color1 = []
                 var color2 = [];
+                var teamNames = {};
                 colorData.map(function(d) {
                     teams.push(d.Team);
                     color1.push(d.Color1);
                     color2.push(d.Color2);
+                    teamNames[d.Team] = d.FullName
+
                 })
 
                 var primaryColors = d3.scaleOrdinal()
@@ -121,6 +135,7 @@
                 const scatterAreaWidth = scatterWidth - scatterMargin.left - scatterMargin.right;
                 const scatterAreaHeight = scatterHeight - scatterMargin.top - scatterMargin.bottom;
 
+                
                 scatterplot.append("rect")
                     .attr("fill", "lightblue")
                     .attr("x", scatterAreaWidth/2)
@@ -200,6 +215,9 @@
                 function getNumericPixelVal(str){
                     return Number(String(str).substr(0, String(str).length-2))
                 }
+
+                
+
                 
                 let currentData = data;
 
@@ -211,7 +229,7 @@
                             .attr("cy", d => defScale(d["raptor_defense"]))
                             // .attr("r", 3.5)
                             .attr("r", function(d) {
-                                if (topFive.includes(d)) {return 10}
+                                if (topFive.includes(d)) {return 8}
                                 else 	{ return 3.5 }
                             ;})
                             .attr("stroke", d=> secondaryColors(d['team']))
@@ -219,11 +237,16 @@
                             .attr("fill", d=> primaryColors(d['team']))
                             .style("opacity", .8)
                             .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")")
+                            .style("filter", function(d) {
+                                if (topFive.includes(d)) {return "drop-shadow(2px 2px 10px rgba(240, 240, 0, 1))"}
+                                else 	{ return "none" }
+                            ;})
+                            .style("cursor", "pointer")
                             .on("mouseover", function(e, d){
                                 d3.select(this)
                                     .raise()
                                     .transition().duration(250)
-                                    .attr("r", 8)
+                                    .attr("r", 10)
                                     .attr("opacity", 0.8)
 
                                 let tooltipWidth = 180;
@@ -233,16 +256,16 @@
                                     .attr("opacity", .4)
                                     .raise()
 
-                                let tooltipX = (-tooltipWidth/2) + getNumericPixelVal(offScale(d["raptor_offense"]))
+                                let tooltipX = (-tooltipWidth/2) + getNumericPixelVal(offScale(d["raptor_offense"]))+scatterMargin.left
                                 if ((tooltipX+(tooltipWidth)>=scatterAreaWidth+scatterMargin.left)){
                                     tooltipX = scatterAreaWidth+scatterMargin.left - (tooltipWidth)-2
                                 } else if (tooltipX<=scatterMargin.left) {
                                     tooltipX = scatterMargin.left + 2
                                 }
 
-                                let tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))-tooltipHeight-5+20
+                                let tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))+scatterMargin.top-tooltipHeight-15
                                 if ((tooltipY<=0)){
-                                    tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))+45
+                                    tooltipY = getNumericPixelVal(defScale(d['raptor_defense']))+scatterMargin.top+15
                                 }
                                     
                                 tooltip.append("rect")
@@ -305,14 +328,15 @@
                                 d3.select(this)
                                     .transition().duration(250)
                                     .attr("r", function(d) {
-                                    if (topFive.includes(d)) {return 10}
+                                    if (topFive.includes(d)) {return 8}
                                     else 	{ return 3.5 }
                                 ;})
                                 
                                 d3.selectAll(".tooltip").remove()
                             })
                             .on("click", function(e,d){
-                                d3.select("h4#name").text(d['player_name'])
+                                d3.select("h3#name").text(d['position'] + " - " + d['player_name'])
+                                d3.select("h4#teamname").text(teamNames[d['team']]).style("background-color", primaryColors(d.team)).style("color", secondaryColors(d.team))
                                 d3.select("text#ppg").text(d['ppg'] + " PPG")
                                 d3.select("text#fg").text(d['fg'] + " FG%")
                                 d3.select("text#three").text(d['three'] + " 3P%")
@@ -323,6 +347,7 @@
                             })
                 }
                 // plotCircles();
+                console.log(teamNames)
 
                 d3.select("li#first").text(topFive[0]["player_name"])
                 d3.select("li#second").text(topFive[1]["player_name"])
@@ -559,8 +584,25 @@
                     plotCircles();
                 }
 
+
                 filterPlot("mp", 1000); //preset minutes filter to 1000 minimum
                 filterPlot("season_type", 'RS'); //preset season type filter to regular season
+
+                let zoom = d3.zoom()
+                    .on('zoom', handleZoom)
+                    .scaleExtent([0.5, 6])
+                    .translateExtent([[0, 0], [scatterWidth, scatterHeight]]);
+
+                function handleZoom(e) {
+                    d3.select('svg g')
+                        .attr('transform', e.transform);
+                }
+
+                function initZoom() {
+                    d3.select('svg')
+                        .call(zoom);
+                }
+                // initZoom();
 
         }
             load();

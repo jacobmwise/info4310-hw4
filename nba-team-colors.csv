@@ -1,31 +1,31 @@
-Team,Color1,Color2
-BOS,green,lightgrey
-BRK,black,darkgrey
-NYK,blue,orange
-PHI,blue,red
-TOR,black,red
-CHI,red,black
-CLE,maroon,gold
-DET,red,blue
-IND,navy,yellow
-MIL,darkgreen,bisque
-ATL,red,yellow
-CHA,teal,violet
-MIA,darkred,black
-ORL,blue,lightgrey
-WAS,navy,red
-DEN,navy,gold
-MIN,navy,lime
-OKC,orange,blue
-POR,black,darkred
-UTA,navy,darkgreen
-GSW,blue,gold
-LAC,red,blue
-LAL,gold,purple
-PHO,orange,black
-SAC,purple,grey
-DAL,blue,grey
-HOU,red,lightgrey
-MEM,navy,skyblue
-NOP,bisque,navy
-SAS,grey,black
+Team,Color1,Color2,FullName
+BOS,green,lightgrey,Boston Celtics
+BRK,black,darkgrey,Brooklyn Nets
+NYK,blue,#f58426,New York Knicks
+PHI,blue,#ed174c,Philadelphia 76ers
+TOR,black,#ce1141,Toronto Raptors
+CHI,red,black,Chicago Bulls
+CLE,#6f263d,gold,Cleveland Cavaliers
+DET,red,blue,Detroit Pistons
+IND,navy,yellow,Indiana Pacers
+MIL,darkgreen,bisque,Milwaukee Bucks
+ATL,red,yellow,Atlanta Hawks
+CHA,teal,#1d1160,Charlotte Hornets
+MIA,darkred,black,Miami Heat
+ORL,#0077c0,lightgrey,Orlando Magic
+WAS,navy,red,Washington Wizards
+DEN,navy,gold,Denver Nuggets
+MIN,navy,#78be20,Minnesota Timberwolves
+OKC,#ef3b24,blue,Oklahoma City Thunder
+POR,black,darkred,Portland Trail Blazers
+UTA,navy,darkgreen,Utah Jazz
+GSW,blue,gold,Golden State Warriors
+LAC,red,blue,Los Angeles Clippers
+LAL,gold,purple,Los Angeles Lakers
+PHO,#e56020,#1d1160,Phoenix Suns
+SAC,purple,grey,Sacramento Kings
+DAL,blue,#bbc4ca,Dallas Mavericks
+HOU,red,lightgrey,Houston Rockets
+MEM,navy,skyblue,Memphis Grizzlies
+NOP,#b4975a,navy,New Orleans Pelicans
+SAS,grey,black,San Antonio Spurs
