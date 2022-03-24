@@ -37,8 +37,12 @@
                     <h3>Selected Player Stats</h3>
                     <h4 id="name"></h4>
                     <text id="ppg"></text>
+                    <text id="fg"></text>
+                    <text id="three"></text>
                     <text id="reb"></text>
                     <text id="ast"></text>
+                    <text id="stl"></text>
+                    <text id="blk"></text>
                 </div>
             </div>
         </div>
@@ -58,8 +62,12 @@
                         let age = res[0]['Age']
                         d['age'] = Number(age)
                         d['ppg'] = Number(res[0]['PTS'])
+                        d['fg'] = (Number(res[0]['FG%'])*100).toFixed(1)
+                        d['three'] = (Number(res[0]['3P%'])*100).toFixed(1)
                         d['reb'] = Number(res[0]['TRB'])
                         d['ast'] = Number(res[0]['AST'])
+                        d['stl'] = Number(res[0]['STL'])
+                        d['blk'] = Number(res[0]['BLK'])
                     }
                     d['mp'] = Number(d['mp'])
                 });
@@ -290,8 +298,12 @@
                             .on("click", function(e,d){
                                 d3.select("h4#name").text(d['player_name'])
                                 d3.select("text#ppg").text(d['ppg'] + " PPG")
+                                d3.select("text#fg").text(d['fg'] + " FG%")
+                                d3.select("text#three").text(d['three'] + " 3P%")
                                 d3.select("text#reb").text(d['reb'] + " REB")
                                 d3.select("text#ast").text(d['ast'] + " AST")
+                                d3.select("text#stl").text(d['stl'] + " STL")
+                                d3.select("text#blk").text(d['blk'] + " BLK")
                             })
                 }
                 // plotCircles();
@@ -459,8 +471,12 @@
                             filterPlot(field, currMin)
                             
                         })
-
-                    var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel)
+                    
+                    if (field === "age") {
+                        var minValue = innerMinSelect.append("p").text("Choose an age")
+                    } else {
+                        var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel)
+                    }
 
                     var innerMaxSelect = nameSelect
                                 .append("div")
