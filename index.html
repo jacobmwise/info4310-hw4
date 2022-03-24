@@ -302,6 +302,33 @@
                 d3.select("li#fourth").text(topFive[3]["player_name"])
                 d3.select("li#fifth").text(topFive[4]["player_name"])
 
+                function capitalizeName(str){
+                    // replace logic from Davon Dahon on Stack Overflow (https://stackoverflow.com/questions/40099093/capitalize-names-in-javascript)
+                    return str.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+                }
+
+                //player search
+                var searchLabel = d3.select("div#filters-container").append("text").text("Player search:");
+                var searchDiv = d3.select("div#filters-container")
+                                    .append("div")
+                                    .attr("id", "searchContainer")
+                                    .style("margin-bottom", "12px")
+
+                var searchBar = searchDiv.append("input")
+                                    .attr("id", "searchBar")
+                                    .attr("type", "text")
+                                    .style("margin-top", "6px")
+                                    .on("input", function(e, d) {
+                                        var searchName = d3.select(this).node().value
+                                        if (searchName==""){
+                                            filterPlot("player_name", "All");
+                                        } else {
+                                            console.log(capitalizeName(d3.select(this).node().value))
+                                            filterPlot("player_name", capitalizeName(d3.select(this).node().value));
+                                        }
+                                    })
+               
+
                 function raptorType() {
                     let values = ['raptor_total', 'raptor_offense', 'raptor_defense'];
 
@@ -349,8 +376,12 @@
                         }
                     })
                     values.sort();
-                    values.unshift("All");
-                    var label = d3.select("div#filters-container").append("text").text(field.substring(0,1).toUpperCase() + field.substring(1));
+                    if (field!="season_type"){
+                        values.unshift("All");
+                    } else {
+                        values = ['RS', 'PO']
+                    }
+                    var label = d3.select("div#filters-container").append("text").text((field.substring(0,1).toUpperCase() + field.substring(1)).replace("_", " "));
                     var select = d3.select("div#filters-container")
                                         .append("div")
                                         .append("select")
@@ -370,7 +401,19 @@
                             .enter()
                                 .append("option")
                                 .attr("value", function (d) { return d; })
-                                .text(function (d) { return d; });
+                                .text(function (d) { 
+                                    if (field=="season_type"){
+                                        if (d=="PO"){
+                                            return 'Playoffs'
+                                        } else if (d=="RS"){
+                                            return 'Regular Season'
+                                        } else {
+                                            return d;
+                                        } 
+                                    } else {
+                                        return d; 
+                                    }
+                                });
                 }
 
 
@@ -430,7 +473,7 @@
                     nameSelect.append("hr")
                 }
 
-
+                createDropdown('season_type');
                 createDropdown('position');
                 createDropdown('team');
 
@@ -481,7 +524,8 @@
                 }
 
                 filterPlot("mp", 1000); //preset minutes filter to 1000 minimum
-            
+                filterPlot("season_type", 'RS'); //preset season type filter to regular season
+
         }
             load();
         </script>
