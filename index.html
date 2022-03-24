@@ -474,6 +474,10 @@
                     
                     if (field === "age") {
                         var minValue = innerMinSelect.append("p").text("Choose an age")
+                        var resetButton = innerMinSelect.append("button").text("Reset").on("click", function(e,d){
+                            filterPlot(field, "All")
+                            minValue.text("Choose an age")
+                        });
                     } else {
                         var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel)
                     }
