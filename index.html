@@ -85,6 +85,10 @@
                         d['blk'] = Number(res[0]['BLK'])
                     }
                     d['mp'] = Number(d['mp'])
+                    d['raptor_offense'] = Number(d['raptor_offense'])
+                    d['raptor_defense'] = Number(d['raptor_defense'])
+
+
                 });
                 data = data.filter((d) => { return (d["position"]) });
                 data = data.filter((d) => { return (d["age"]) });
@@ -121,8 +125,8 @@
                     .domain(teams)
                     .range(color2);
 
-                const offExtent = d3.extent(data, d => d['raptor_offense']);
-                const defExtent = d3.extent(data, d => d['raptor_defense']);
+                var offExtent = d3.extent(data, d => d['raptor_offense']);
+                var defExtent = d3.extent(data, d => d['raptor_defense']);
                 const totalExtent = d3.extent(data, d => d['raptor_total'])
 
                 const minutesExtent = d3.extent(data, d => d['mp'])
@@ -158,8 +162,8 @@
                                 // .attr("transform","translate("+scatterMargin.left+","+scatterMargin.top+")");
                 
 
-                const offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterAreaWidth]);
-                const defScale = d3.scaleLinear().domain([10, -10]).range([0, scatterAreaHeight]);
+                let offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterAreaWidth]);
+                let defScale = d3.scaleLinear().domain([10, -10]).range([0, scatterAreaHeight]);
 
                 let leftAxis = d3.axisLeft(defScale)
                 //    .tickFormat(d3.format("$.0s"));
@@ -172,24 +176,26 @@
                                         .tickSize(-scatterAreaHeight-10)
                                         .tickFormat("")
                 
-                annotations.append("g")
+                let leftGridlinesG = annotations.append("g")
                     .attr("class", "y gridlines")
                     .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
                     .call(leftGridlines);
 
-                annotations.append("g")
+                let leftAxisG = annotations.append("g")
                     .attr("class", "y axis")
                     .attr("transform",`translate(${scatterMargin.left-10},${scatterMargin.top})`)
                     .call(leftAxis)
 
-                annotations.append("g")
+                let bottomGridlinesG = annotations.append("g")
                     .attr("class", "x gridlines")
                     .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomGridlines);
-                annotations.append("g")
+                let bottomAxisG =  annotations.append("g")
                     .attr("class", "x axis")
                     .attr("transform",`translate(${scatterMargin.left},${scatterAreaHeight+scatterMargin.top+10})`)
                     .call(bottomAxis);
+
+
                 scatter.append("g")
                     .attr('transform', 'translate(' + scatterWidth/2 + ', ' + scatterHeight + ')')
                     .append('text')
@@ -220,8 +226,61 @@
 
                 
                 let currentData = data;
+                let currentMax = 10;
+                let defaultMin = 10;
 
                 function plotCircles() {
+
+                    var testDefExtent = d3.extent(currentData, d => d['raptor_defense']);
+                    var testOffExtent = d3.extent(currentData, d => d['raptor_offense']);
+
+                    let maxVal = Math.max(Math.abs(testDefExtent[0]), Math.abs(testDefExtent[1]), Math.abs(testOffExtent[0]), Math.abs(testOffExtent[1]))
+                    console.log(maxVal)
+                    if (maxVal > currentMax){
+                        offScale = d3.scaleLinear().domain([-maxVal, maxVal]).range([0, scatterAreaWidth]);
+                        defScale = d3.scaleLinear().domain([maxVal, -maxVal]).range([0, scatterAreaHeight]);
+
+                        leftAxis = d3.axisLeft(defScale); //.tickFormat(d3.format('.0%'));
+                        leftAxisG.transition().duration(350).call(leftAxis)
+
+                        bottomAxis = d3.axisBottom(offScale);
+                        bottomAxisG.transition().duration(350).call(bottomAxis)
+
+                        leftGridlines = d3.axisLeft(defScale)
+                                            .tickSize(-scatterAreaWidth-10)
+                                            .tickFormat("")
+
+                        leftGridlinesG.transition().duration(350).call(leftGridlines);
+
+                        bottomGridlines = d3.axisBottom(offScale)
+                                            .tickSize(-scatterAreaHeight-10)
+                                            .tickFormat("")
+
+                        bottomGridlinesG.transition().duration(350).call(bottomGridlines);
+                    } else if (maxVal <= defaultMin){
+                        offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterAreaWidth]);
+                        defScale = d3.scaleLinear().domain([10, -10]).range([0, scatterAreaHeight]);
+
+
+                        leftAxis = d3.axisLeft(defScale); //.tickFormat(d3.format('.0%'));
+                        leftAxisG.transition().duration(350).call(leftAxis)
+
+                        bottomAxis = d3.axisBottom(offScale);
+                        bottomAxisG.transition().duration(350).call(bottomAxis)
+
+                        leftGridlines = d3.axisLeft(defScale)
+                                            .tickSize(-scatterAreaWidth-10)
+                                            .tickFormat("")
+
+                        leftGridlinesG.transition().duration(350).call(leftGridlines);
+
+                        bottomGridlines = d3.axisBottom(offScale)
+                                            .tickSize(-scatterAreaHeight-10)
+                                            .tickFormat("")
+
+                        bottomGridlinesG.transition().duration(350).call(bottomGridlines);
+                    }
+
                     let circles = scatter.selectAll("circle.player")
                             .data(currentData)
                             .join('circle').attr("class", "player")
