@@ -440,7 +440,7 @@
                                         }
                                     })
                
-
+                let currRaptorType = "raptor_total"
                 function raptorType() {
                     let values = ['raptor_total', 'raptor_offense', 'raptor_defense'];
 
@@ -456,7 +456,7 @@
                                         .style("margin-top", "6px")
                                         .style("margin-bottom", "12px")
                                         .on("change", function(e, d) {
-                                            filterRaptorType(d3.select(this).node().value);
+                                            filterPlot("type", d3.select(this).node().value);
                                             // filter(d3.select(this).attr("data-field"), d3.select(this).node().value);
                                         })
                     select.selectAll("raptorType")
@@ -469,15 +469,6 @@
                 }
                 raptorType();
 
-                function filterRaptorType(val) {
-                    topFive = data.sort((a, b) => b[val] - a[val]).slice(0, 5);
-                    d3.select("li#first").text(topFive[0]["player_name"])
-                    d3.select("li#second").text(topFive[1]["player_name"])
-                    d3.select("li#third").text(topFive[2]["player_name"])
-                    d3.select("li#fourth").text(topFive[3]["player_name"])
-                    d3.select("li#fifth").text(topFive[4]["player_name"])
-                    plotCircles();
-                }
 
                 function createDropdown(field) {
                     let values = [];
@@ -544,15 +535,16 @@
                                 .style("display", "flex")
                                 .style("flex-direction", "column")
                                 .style("justify-content", "space-between")
+                                .style("marign-bottom", 0)
 
                     var label = d3.select(`div#${field}Div`).append("text").text(name);
 
                     var innerMinSelect = nameSelect
                                 .append("div")
                                 .attr("class", "sliderRow")
-                                .style("display", "block")
-                                .style("flex-direction", "row")
-                                .style("justify-content", "space-between")
+                                .style("display", "flex")
+                                .style("flex-direction", "column")
+                                .style("justify-content", "center")
 
                     //min slider
                     // var minLabel = innerMinSelect.append("p").text(name)
@@ -573,24 +565,24 @@
                         })
                     
                     if (field === "age") {
-                        var minValue = innerMinSelect.append("p").text("Choose an age")
+                        var minValue = innerMinSelect.append("p").text("Choose an age").style("margin-top", 0)
                         var resetButton = innerMinSelect.append("button").text("Reset").on("click", function(e,d){
                             filterPlot(field, "All")
                             minValue.text("Choose an age")
-                        });
+                        }).style("width", "50%");
                     } else {
-                        var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel)
+                        var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel).style("margin-top", 0)
                     }
 
-                    var innerMaxSelect = nameSelect
-                                .append("div")
-                                .attr("class", "sliderRow")
-                                .style("display", "flex")
-                                .style("flex-direction", "row")
-                                .style("justify-content", "space-between")
+                    // var innerMaxSelect = nameSelect
+                    //             .append("div")
+                    //             .attr("class", "sliderRow")
+                    //             .style("display", "flex")
+                    //             .style("flex-direction", "row")
+                    //             .style("justify-content", "space-between")
 
                    
-                    nameSelect.append("hr")
+                    // nameSelect.append("hr")
                 }
 
                 createDropdown('season_type');
@@ -601,12 +593,31 @@
                 createSlider("Age", "age", ageExtent)
 
                 let currentFilters = {}
+                // function filterRaptorType(val) {
+                //     // delete currentFilters[field]
+                //     // currentData = data
+
+                //     // currentFilters[field] = val;
+                //     topFive = data.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                //     d3.select("li#first").text(topFive[0]["player_name"])
+                //     d3.select("li#second").text(topFive[1]["player_name"])
+                //     d3.select("li#third").text(topFive[2]["player_name"])
+                //     d3.select("li#fourth").text(topFive[3]["player_name"])
+                //     d3.select("li#fifth").text(topFive[4]["player_name"])
+                //     plotCircles();
+                // }
+
                 function filterPlot(field, val) {
-                    delete currentFilters[field]
-                    currentData = data
-                     if (val!=="All") {
+                    if (field === "type") {
+                        console.log("hi")
+                        topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                        currRaptorType = val
+                    } else {
+                        delete currentFilters[field]
+                        currentData = data
+                        if (val!=="All") {
                         currentFilters[field] = val;
-                     }
+                        }
 
                         Object.keys(currentFilters).forEach(key => {
                             if (key==="mp"){
@@ -620,9 +631,12 @@
                             }
                         })
                         console.log(currentFilters)
+                        topFive = currentData.sort((a, b) => b[currRaptorType] - a[currRaptorType]).slice(0, 5);
+                    }
                     
                     if (currentData.length >= 5) {
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
+                        console.log(topFive)
                         d3.select("li#first").text(topFive[0]["player_name"])
                         d3.select("li#second").text(topFive[1]["player_name"])
                         d3.select("li#third").text(topFive[2]["player_name"])
@@ -630,6 +644,7 @@
                         d3.select("li#fifth").text(topFive[4]["player_name"])
                     } else {
                         topFive = currentData.sort((a, b) => b[val] - a[val])
+                        console.log(topFive)
                         let numMap = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth"}
                         for (let i=0; i < currentData.length; i++) {
                             console.log(i)
