@@ -82,11 +82,11 @@
         <h2 style="text-align: center;">Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
         <div style="display: flex; flex-direction: row; justify-content: center;">
-            <div id="filters-container">
+            <div id="filters-container" style="width: 300px;">
                 
             </div>
             <svg id="scatter" width="550" height="550" style="margin-left: 40px;"></svg>
-            <div style="margin-left: 30px; display: flex; flex-direction: column;">
+            <div style="margin-left: 30px; display: flex; flex-direction: column; width: 300px;">
                 <div>
                     <div id="top-five-title-container" style="display: flex; align-items: center;">
                         <h2 style="margin-right: 8px;">Top Five</h2>
@@ -616,6 +616,7 @@
                         .attr('max', thisExtent[1])
                         .attr("id", "min"+field)
                         .attr("value", currMin)
+                        .style("width", "50%")
 
                     minSlider
                         .on("input", function(e, d){
@@ -698,18 +699,18 @@
                     if (currentData.length >= 5) {
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
                         console.log(topFive)
-                        d3.select("li#first").text(topFive[0]["player_name"] + " - " + Number(topFive[0][currRaptorType]).toFixed(2))
-                        d3.select("li#second").text(topFive[1]["player_name"] + " - " + Number(topFive[1][currRaptorType]).toFixed(2))
-                        d3.select("li#third").text(topFive[2]["player_name"] + " - " + Number(topFive[2][currRaptorType]).toFixed(2))
-                        d3.select("li#fourth").text(topFive[3]["player_name"] + " - " + Number(topFive[3][currRaptorType]).toFixed(2))
-                        d3.select("li#fifth").text(topFive[4]["player_name"] + " - " + Number(topFive[4][currRaptorType]).toFixed(2))
+                        d3.select("li#first").text(topFive[0]["player_name"] + ": " + Number(topFive[0][currRaptorType]).toFixed(2))
+                        d3.select("li#second").text(topFive[1]["player_name"] + ": " + Number(topFive[1][currRaptorType]).toFixed(2))
+                        d3.select("li#third").text(topFive[2]["player_name"] + ": " + Number(topFive[2][currRaptorType]).toFixed(2))
+                        d3.select("li#fourth").text(topFive[3]["player_name"] + ": " + Number(topFive[3][currRaptorType]).toFixed(2))
+                        d3.select("li#fifth").text(topFive[4]["player_name"] + ": " + Number(topFive[4][currRaptorType]).toFixed(2))
                     } else {
                         topFive = currentData.sort((a, b) => b[val] - a[val])
                         console.log(topFive)
                         let numMap = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth"}
                         for (let i=0; i < currentData.length; i++) {
                             console.log(i)
-                            d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"] + " - " + Number(topFive[i][currRaptorType]).toFixed(2))
+                            d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"] + ": " + Number(topFive[i][currRaptorType]).toFixed(2))
                             delete numMap[i]
                         }
                         Object.keys(numMap).forEach(n => {
