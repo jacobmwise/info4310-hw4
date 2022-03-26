@@ -84,7 +84,7 @@
             Built as a tool for the modern NBA, RAPTOR aims to reflect how players are evaluated by front offices. 
             RAPTOR measures the number of points a player contributes to team offense and team defense per 100 possessions, relative to a league-average player. 
             For example, a player with an Offensive RAPTOR of +1.5 means he improves his team's offense by 1.5 points per 100 offensive possessions while he is on the floor. 
-            Defensive and Total RAPTOR work similarly.</p>
+            Defensive RAPTOR works similarly for defense, while Total RAPTOR is a combination of the two.</p>
 
         <div style="display: flex; flex-direction: row; justify-content: center;">
             <div id="filters-container">
@@ -166,7 +166,6 @@
                 let topFive = data.sort((a, b) => b["raptor_total"] - a["raptor_total"]).slice(0, 5);
 
                 console.log(data);
-                console.log(stats)
 
                 var dataTeams = []
                 data.map(function(d) {
@@ -306,7 +305,6 @@
                     var testOffExtent = d3.extent(currentData, d => d['raptor_offense']);
 
                     let maxVal = Math.max(Math.abs(testDefExtent[0]), Math.abs(testDefExtent[1]), Math.abs(testOffExtent[0]), Math.abs(testOffExtent[1]))
-                    console.log(maxVal)
                     if (maxVal > currentMax){
                         maxVal+=1
                         offScale = d3.scaleLinear().domain([-maxVal, maxVal]).range([0, scatterAreaWidth]);
@@ -358,6 +356,7 @@
                     let circles = scatter.selectAll("circle.player")
                             .data(currentData)
                             .join('circle').attr("class", "player")
+                            .attr("value", d => d['player_name'])
                             .attr("cx", d => offScale(d["raptor_offense"]))
                             .attr("cy", d => defScale(d["raptor_defense"]))
                             // .attr("r", 3.5)
@@ -479,7 +478,12 @@
                             })
                             .on("click", function(e,d){
                                 if (selectedPlayer){
-                                    if (topFive.includes(selectedPlayer._groups[0][0].__data__.player_name)){
+                                    let val = selectedPlayer._groups[0][0].getAttribute("value")
+                                    let names = []
+                                    topFive.forEach(d => {
+                                        names.push(d['player_name'])
+                                    });
+                                    if (names.includes(val)){
                                         selectedPlayer.transition().duration(250).attr("r", 8)
                                     } else {
                                         selectedPlayer.transition().duration(250).attr("r", 3.5)
@@ -503,7 +507,6 @@
                             })
                 }
                 // plotCircles();
-                console.log(teamNames)
 
                 d3.select("li#first").text(topFive[0]["player_name"])
                 d3.select("li#second").text(topFive[1]["player_name"])
@@ -532,7 +535,6 @@
                                         if (searchName==""){
                                             filterPlot("player_name", "All");
                                         } else {
-                                            console.log(capitalizeName(d3.select(this).node().value))
                                             filterPlot("player_name", capitalizeName(d3.select(this).node().value));
                                         }
                                     })
@@ -737,13 +739,11 @@
                                 // currentData = currentData.filter(d => { return d[field].includes(val) });
                             }
                         })
-                        console.log(currentFilters)
                         topFive = currentData.sort((a, b) => b[currRaptorType] - a[currRaptorType]).slice(0, 5);
                     }
                     
                     if (currentData.length >= 5) {
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
-                        console.log(topFive)
                         d3.select("li#first").text(topFive[0]["player_name"] + ": " + Number(topFive[0][currRaptorType]).toFixed(2))
                         d3.select("li#second").text(topFive[1]["player_name"] + ": " + Number(topFive[1][currRaptorType]).toFixed(2))
                         d3.select("li#third").text(topFive[2]["player_name"] + ": " + Number(topFive[2][currRaptorType]).toFixed(2))
@@ -751,10 +751,8 @@
                         d3.select("li#fifth").text(topFive[4]["player_name"] + ": " + Number(topFive[4][currRaptorType]).toFixed(2))
                     } else {
                         topFive = currentData.sort((a, b) => b[val] - a[val])
-                        console.log(topFive)
                         let numMap = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth"}
                         for (let i=0; i < currentData.length; i++) {
-                            console.log(i)
                             d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"] + ": " + Number(topFive[i][currRaptorType]).toFixed(2))
                             delete numMap[i]
                         }
