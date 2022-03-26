@@ -70,7 +70,7 @@
 
 
             #filters-container {
-                width: 170px;
+                width: 200px;
                 margin-top: 50px;
             }
 
@@ -82,7 +82,7 @@
         <h2 style="text-align: center;">Ronin Chasan (rcc263), Jacob Wise (jmw555)</h2>
 
         <div style="display: flex; flex-direction: row; justify-content: center;">
-            <div id="filters-container" style="width: 300px;">
+            <div id="filters-container">
                 
             </div>
             <svg id="scatter" width="550" height="550" style="margin-left: 40px;"></svg>
@@ -103,16 +103,24 @@
                     <h2>Click on a player to see more info</h2>
                 </div>
                 <div id="selected-stats" style="display: none; flex-direction: column; opacity: 0;">
-                    <h3>Selected Player Stats</h3>
-                    <h3 id="name"></h4>
-                    <h4 id="teamname"></h5>
-                    <text id="ppg"></text>
-                    <text id="fg"></text>
-                    <text id="three"></text>
-                    <text id="reb"></text>
-                    <text id="ast"></text>
-                    <text id="stl"></text>
-                    <text id="blk"></text>
+                    <h3>Selected Player Per Game Stats</h3>
+                    <h3 id="name"></h3>
+                    <h4 id="teamname"></h4>
+                    <div style="display: flex; justify-content: space-around;">
+                        <div style="display: flex; flex-direction: column;">
+                            <text id="ppg"></text>
+                            <text id="fg"></text>
+                            <text id="three"></text>
+                            <text id="turnovers"></text>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <text id="reb"></text>
+                            <text id="ast"></text>
+                            <text id="stl"></text>
+                            <text id="blk"></text>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -138,6 +146,8 @@
                         d['ast'] = Number(res[0]['AST'])
                         d['stl'] = Number(res[0]['STL'])
                         d['blk'] = Number(res[0]['BLK'])
+                        d['to'] = Number(res[0]['TOV'])
+
                     }
                     d['mp'] = Number(d['mp'])
                     d['raptor_offense'] = Number(d['raptor_offense'])
@@ -283,6 +293,7 @@
                 let currentData = data;
                 let currentMax = 10;
                 let defaultMin = 10;
+                let selectedPlayer = null;
 
                 function plotCircles() {
 
@@ -446,12 +457,30 @@
                                     .transition().duration(250)
                                     .attr("r", function(d) {
                                     if (topFive.includes(d)) {return 8}
-                                    else 	{ return 3.5 }
+                                    else 	{ 
+                                        if (selectedPlayer){
+                                            if (d['player_name'] == selectedPlayer._groups[0][0].__data__.player_name){
+                                               return 7
+                                            } else {
+                                               return 3.5
+                                            }
+                                        } else {
+                                            return 3.5
+                                        }
+                                    }
                                 ;})
                                 
                                 d3.selectAll(".tooltip").remove()
                             })
                             .on("click", function(e,d){
+                                if (selectedPlayer){
+                                    if (topFive.includes(selectedPlayer._groups[0][0].__data__.player_name)){
+                                        selectedPlayer.transition().duration(250).attr("r", 8)
+                                    } else {
+                                        selectedPlayer.transition().duration(250).attr("r", 3.5)
+                                    }
+                                }
+                                selectedPlayer = d3.select(this) //.attr("r", 5)
                                 d3.select("#click-for-more").style("opacity", 0).transition().delay(650).style("display", "none")
                                 d3.select("#selected-stats").style("display", "flex").transition().delay(450).style("opacity", 1)
 
@@ -464,6 +493,8 @@
                                 d3.select("text#ast").text(d['ast'] + " AST")
                                 d3.select("text#stl").text(d['stl'] + " STL")
                                 d3.select("text#blk").text(d['blk'] + " BLK")
+                                d3.select("text#turnovers").text(d['to'] + " TO")
+
                             })
                 }
                 // plotCircles();
@@ -672,14 +703,22 @@
 
                 function filterPlot(field, val) {
                     if (field === "type") {
-                        console.log("hi")
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
                         currRaptorType = val
                     } else {
                         delete currentFilters[field]
                         currentData = data
                         if (val!=="All") {
-                        currentFilters[field] = val;
+                            currentFilters[field] = val;
+                        }
+
+                        //force minutes minimum down when switching to playoffs
+                        if ((field=="season_type") && (val=="PO")){
+                            if (currentFilters["mp"] > 750){
+                                currentFilters["mp"] = 150
+                                d3.select("#minmp").attr("value", 150)
+                                d3.select("#minLabel").text("150+ minutes")
+                            }
                         }
 
                         Object.keys(currentFilters).forEach(key => {
@@ -726,7 +765,7 @@
                 filterPlot("season_type", 'RS'); //preset season type filter to regular season
 
 
-                d3.select("#filters-container").append("button").text("Reset Filters").on("click", function(e,d) {
+                d3.select("#filters-container").append("button").text("Reset All Filters").on("click", function(e,d) {
                     filterPlot("player_name", "All");
                     // d3.select("#searchBar").setAttribute("value", "")
                     document.getElementById("searchBar").value = "";
@@ -747,7 +786,7 @@
                     filterPlot("age", "All")
                     document.getElementById("minage").value = 19;
                     d3.select("#ageLabel").text("Choose an age")
-                }).style("width", "50%").style("margin-top", "20px");
+                }).style("width", "70%").style("margin-top", "20px");
 
                 let zoom = d3.zoom()
                     .on('zoom', handleZoom)
