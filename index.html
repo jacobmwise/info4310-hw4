@@ -4,6 +4,10 @@
         <title>INFO4310 HW4 - rcc263, jmw555</title>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <style>
+            * {
+                font-family: 'Tahoma', Arial, sans-serif;
+            }
+
             body{
                 background: #ffefd5;
             }
@@ -25,6 +29,52 @@
                 padding: 4px;
                 text-align: center;
             }
+
+            input, select, button {
+                border-radius: 6px;
+                border: 1px solid grey;
+                height: 24px;
+                padding: 2px 2px 2px 6px;
+            }
+
+            select{
+                cursor: pointer;
+            }
+
+            button {
+                padding: 6px !important;
+                height: auto !important;
+                cursor: pointer;
+                transition:all 0.3s;
+            }
+
+            button:hover{
+                background-color: white;
+            }
+
+            #click-for-more{
+                /* background-color: white; */
+                width: 198px;
+                height: 200px;
+                text-align: center;
+                color: grey;
+                font-style: italic;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                /* border-top-right-radius: 8px;
+                border-bottom-right-radius: 8px; */
+                transition: all 0.65s;
+                margin-bottom: -200px;
+            }
+
+
+            #filters-container {
+                width: 170px;
+                margin-top: 50px;
+            }
+
+
         </style>
     </head>
     <body>
@@ -35,10 +85,12 @@
             <div id="filters-container">
                 
             </div>
-            <svg id="scatter" width="550" height="550" style="margin-left: 50px;"></svg>
-            <div style="margin-left: 50px; display: flex; flex-direction: column;">
+            <svg id="scatter" width="550" height="550" style="margin-left: 40px;"></svg>
+            <div style="margin-left: 30px; display: flex; flex-direction: column;">
                 <div>
-                    <h2>Top Five</h2>
+                    <div id="top-five-title-container" style="display: flex; align-items: center;">
+                        <h2 style="margin-right: 8px;">Top Five</h2>
+                    </div>
                     <ol>
                         <li id="first"></li>
                         <li id="second"></li>
@@ -47,7 +99,10 @@
                         <li id="fifth"></li>
                     </ol>
                 </div>
-                <div style="display: flex; flex-direction: column;">
+                <div id="click-for-more">
+                    <h2>Click on a player to see more info</h2>
+                </div>
+                <div id="selected-stats" style="display: none; flex-direction: column; opacity: 0;">
                     <h3>Selected Player Stats</h3>
                     <h3 id="name"></h4>
                     <h4 id="teamname"></h5>
@@ -237,6 +292,7 @@
                     let maxVal = Math.max(Math.abs(testDefExtent[0]), Math.abs(testDefExtent[1]), Math.abs(testOffExtent[0]), Math.abs(testOffExtent[1]))
                     console.log(maxVal)
                     if (maxVal > currentMax){
+                        maxVal+=1
                         offScale = d3.scaleLinear().domain([-maxVal, maxVal]).range([0, scatterAreaWidth]);
                         defScale = d3.scaleLinear().domain([maxVal, -maxVal]).range([0, scatterAreaHeight]);
 
@@ -257,6 +313,8 @@
                                             .tickFormat("")
 
                         bottomGridlinesG.transition().duration(350).call(bottomGridlines);
+                        maxVal-=1
+
                     } else if (maxVal <= defaultMin){
                         offScale = d3.scaleLinear().domain([-10, 10]).range([0, scatterAreaWidth]);
                         defScale = d3.scaleLinear().domain([10, -10]).range([0, scatterAreaHeight]);
@@ -394,6 +452,9 @@
                                 d3.selectAll(".tooltip").remove()
                             })
                             .on("click", function(e,d){
+                                d3.select("#click-for-more").style("opacity", 0).transition().delay(650).style("display", "none")
+                                d3.select("#selected-stats").style("display", "flex").transition().delay(450).style("opacity", 1)
+
                                 d3.select("h3#name").text(d['position'] + " - " + d['player_name'])
                                 d3.select("h4#teamname").text(teamNames[d['team']]).style("background-color", primaryColors(d.team)).style("color", secondaryColors(d.team))
                                 d3.select("text#ppg").text(d['ppg'] + " PPG")
@@ -420,7 +481,7 @@
                 }
 
                 //player search
-                var searchLabel = d3.select("div#filters-container").append("text").text("Player search:");
+                var searchLabel = d3.select("div#filters-container").append("text").text("Player search:").style("font-weight", "bold");
                 var searchDiv = d3.select("div#filters-container")
                                     .append("div")
                                     .attr("id", "searchContainer")
@@ -444,8 +505,8 @@
                 function raptorType() {
                     let values = ['raptor_total', 'raptor_offense', 'raptor_defense'];
 
-                    var label = d3.select("div#filters-container").append("text").text("RAPTOR Type");
-                    var select = d3.select("div#filters-container")
+                    // var label = d3.select("div#filters-container").append("text").text("RAPTOR Type");
+                    var select = d3.select("div#top-five-title-container")
                                         .append("div")
                                         .append("select")
                                         .attr("class", "dropdownFilter")
@@ -453,8 +514,8 @@
                                         // .attr("data-field", field)
                                         .style("border", "1px solid black")
                                         .style("border-radius", "5px")
-                                        .style("margin-top", "6px")
-                                        .style("margin-bottom", "12px")
+                                        // .style("margin-top", "6px")
+                                        // .style("margin-bottom", "12px")
                                         .on("change", function(e, d) {
                                             filterPlot("type", d3.select(this).node().value);
                                             // filter(d3.select(this).attr("data-field"), d3.select(this).node().value);
@@ -464,7 +525,7 @@
                             .enter()
                                 .append("option")
                                 .attr("value", function (d) { return d; })
-                                .text(function (d) { return d.charAt(0).toUpperCase() + d.substring(1,6) + " " + d.charAt(7).toUpperCase() + d.substring(8); });
+                                .text(function (d) { return d.substring(0,6).toUpperCase() + " " + d.charAt(7).toUpperCase() + d.substring(8); });
 
                 }
                 raptorType();
@@ -484,7 +545,7 @@
                     } else {
                         values = ['RS', 'PO']
                     }
-                    var label = d3.select("div#filters-container").append("text").text((field.substring(0,1).toUpperCase() + field.substring(1)).replace("_", " "));
+                    var label = d3.select("div#filters-container").append("text").text((field.substring(0,1).toUpperCase() + field.substring(1)).replace("_", " ")).style("font-weight", "bold");
                     var select = d3.select("div#filters-container")
                                         .append("div")
                                         .append("select")
@@ -537,7 +598,7 @@
                                 .style("justify-content", "space-between")
                                 .style("marign-bottom", 0)
 
-                    var label = d3.select(`div#${field}Div`).append("text").text(name);
+                    var label = d3.select(`div#${field}Div`).append("text").text(name).style("font-weight", "700");
 
                     var innerMinSelect = nameSelect
                                 .append("div")
@@ -566,7 +627,7 @@
                     
                     if (field === "age") {
                         var minValue = innerMinSelect.append("p").text("Choose an age").style("margin-top", 0)
-                        var resetButton = innerMinSelect.append("button").text("Reset").on("click", function(e,d){
+                        var resetButton = innerMinSelect.append("button").text("Reset Age").on("click", function(e,d){
                             filterPlot(field, "All")
                             minValue.text("Choose an age")
                         }).style("width", "50%");
@@ -637,18 +698,18 @@
                     if (currentData.length >= 5) {
                         topFive = currentData.sort((a, b) => b[val] - a[val]).slice(0, 5);
                         console.log(topFive)
-                        d3.select("li#first").text(topFive[0]["player_name"])
-                        d3.select("li#second").text(topFive[1]["player_name"])
-                        d3.select("li#third").text(topFive[2]["player_name"])
-                        d3.select("li#fourth").text(topFive[3]["player_name"])
-                        d3.select("li#fifth").text(topFive[4]["player_name"])
+                        d3.select("li#first").text(topFive[0]["player_name"] + " - " + Number(topFive[0][currRaptorType]).toFixed(2))
+                        d3.select("li#second").text(topFive[1]["player_name"] + " - " + Number(topFive[1][currRaptorType]).toFixed(2))
+                        d3.select("li#third").text(topFive[2]["player_name"] + " - " + Number(topFive[2][currRaptorType]).toFixed(2))
+                        d3.select("li#fourth").text(topFive[3]["player_name"] + " - " + Number(topFive[3][currRaptorType]).toFixed(2))
+                        d3.select("li#fifth").text(topFive[4]["player_name"] + " - " + Number(topFive[4][currRaptorType]).toFixed(2))
                     } else {
                         topFive = currentData.sort((a, b) => b[val] - a[val])
                         console.log(topFive)
                         let numMap = {0: "first", 1: "second", 2: "third", 3: "fourth", 4: "fifth"}
                         for (let i=0; i < currentData.length; i++) {
                             console.log(i)
-                            d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"])
+                            d3.select(`li#${numMap[i]}`).text(topFive[i]["player_name"] + " - " + Number(topFive[i][currRaptorType]).toFixed(2))
                             delete numMap[i]
                         }
                         Object.keys(numMap).forEach(n => {
