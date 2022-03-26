@@ -627,13 +627,14 @@
                         })
                     
                     if (field === "age") {
-                        var minValue = innerMinSelect.append("p").text("Choose an age").style("margin-top", 0)
+                        var minValue = innerMinSelect.append("p").attr("id", "ageLabel").text("Choose an age").style("margin-top", 0)
                         var resetButton = innerMinSelect.append("button").text("Reset Age").on("click", function(e,d){
                             filterPlot(field, "All")
+                            document.getElementById("minage").value = 19;
                             minValue.text("Choose an age")
                         }).style("width", "50%");
                     } else {
-                        var minValue = innerMinSelect.append("p").text(Number(currMin) + textLabel).style("margin-top", 0)
+                        var minValue = innerMinSelect.append("p").attr("id", "minLabel").text(Number(currMin) + textLabel).style("margin-top", 0)
                     }
 
                     // var innerMaxSelect = nameSelect
@@ -723,6 +724,30 @@
 
                 filterPlot("mp", 1000); //preset minutes filter to 1000 minimum
                 filterPlot("season_type", 'RS'); //preset season type filter to regular season
+
+
+                d3.select("#filters-container").append("button").text("Reset Filters").on("click", function(e,d) {
+                    filterPlot("player_name", "All");
+                    // d3.select("#searchBar").setAttribute("value", "")
+                    document.getElementById("searchBar").value = "";
+
+                    filterPlot("season_type", "RS");
+                    d3.select("#season_typeSelect").property("value", "RS")
+                    
+                    filterPlot("position", "All");
+                    d3.select("#positionSelect").property("value", "All")
+
+                    filterPlot("team", "All")
+                    d3.select("#teamSelect").property("value", "All")
+
+                    filterPlot("mp", 1000);
+                    document.getElementById("minmp").value = 1000;
+                    d3.select("#minLabel").text("1000+ minutes")
+
+                    filterPlot("age", "All")
+                    document.getElementById("minage").value = 19;
+                    d3.select("#ageLabel").text("Choose an age")
+                }).style("width", "50%").style("margin-top", "20px");
 
                 let zoom = d3.zoom()
                     .on('zoom', handleZoom)
